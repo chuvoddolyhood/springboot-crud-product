@@ -1,0 +1,17 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: springboot-crud-product
+  datasource:
+    url: jdbc:postgresql://localhost:5432/CRUDDEMO
+    username: postgres
+    password: 240120
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
