@@ -23,16 +23,29 @@ public class ProductServiceImp implements ProductService {
 	@Autowired
 	private ModelMapper mapper;
 
+	@Override
+	public Product toEntity(ProductDTO dto) {
+		return mapper.map(dto, Product.class);
+	}
+
+	@Override
+	public ProductDTO toDto(Product entity) {
+		return mapper.map(entity, ProductDTO.class);
+	}
+
+	@Override
 	public List<ProductDTO> getAll() {
 //		return repo.findAll().stream().map(p -> mapper.map(p, ProductDTO.class)).toList();
 		return repo.findAll().stream().map(this::toDto).toList();
 	}
 
+	@Override
 	public ProductDTO getById(Long id) {
 		Product p = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found with id = " + id));
 		return toDto(p);
 	}
 
+	@Override
 	public ProductDTO addItem(ProductDTO p) {
 		if (p.getPrice() < 0) {
 			throw new IllegalArgumentException("Price cannot be negative");
@@ -41,11 +54,13 @@ public class ProductServiceImp implements ProductService {
 		return toDto(saved);
 	}
 
+	@Override
 	public void deleteItem(Long id) {
 		Product p = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found with id = " + id));
 		repo.deleteById(p.getId());
 	}
 
+	@Override
 	public ProductDTO updateItem(Long id, ProductDTO p) {
 		ProductDTO old = getById(id);
 		old.setName(p.getName());
@@ -60,6 +75,7 @@ public class ProductServiceImp implements ProductService {
 		return toDto(entity);
 	}
 
+	@Override
 	public ProductDTO updateProductPartially(Long id, Map<String, Object> fields) {
 		ProductDTO product = getById(id);
 
@@ -77,12 +93,11 @@ public class ProductServiceImp implements ProductService {
 		return toDto(entity);
 	}
 
-	public Product toEntity(ProductDTO dto) {
-		return mapper.map(dto, Product.class);
-	}
+	@Override
+	public List<ProductDTO> getProductsByMinPrice(Double price) {
+		List<Product> products = repo.getProductsByMinPrice(price);
 
-	public ProductDTO toDto(Product entity) {
-		return mapper.map(entity, ProductDTO.class);
+		return products.stream().map(this::toDto).toList();
 	}
 
 }

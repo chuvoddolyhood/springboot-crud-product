@@ -26,7 +26,7 @@ public class ProductController {
 	@Autowired
 	private ProductService service;
 
-	@GetMapping
+	@GetMapping("/get-all")
 	public List<ProductDTO> getAll() {
 		return service.getAll();
 	}
@@ -58,6 +58,11 @@ public class ProductController {
 		ProductDTO updatedProduct = service.updateProductPartially(id, fields);
 
 		return ResponseEntity.ok(updatedProduct);
+	}
+
+	@GetMapping("/min-price")
+	public List<ProductDTO> getProductsByMinPrice(@RequestBody ProductDTO dto) {
+		return service.getProductsByMinPrice(dto.getPrice());
 	}
 
 }

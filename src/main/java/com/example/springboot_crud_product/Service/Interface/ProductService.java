@@ -8,6 +8,10 @@ import com.example.springboot_crud_product.Entity.Product;
 
 public interface ProductService {
 
+	public Product toEntity(ProductDTO dto);
+
+	public ProductDTO toDto(Product entity);
+
 	public List<ProductDTO> getAll();
 
 	public ProductDTO getById(Long id);
@@ -20,7 +24,6 @@ public interface ProductService {
 
 	public ProductDTO updateProductPartially(Long id, Map<String, Object> fields);
 
-	public Product toEntity(ProductDTO dto);
+	public List<ProductDTO> getProductsByMinPrice(Double price);
 
-	public ProductDTO toDto(Product entity);
 }

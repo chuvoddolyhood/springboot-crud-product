@@ -7,9 +7,11 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +55,28 @@ public class GlobalExceptionHandler {
 				java.time.OffsetDateTime.now().toString());
 
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+	}
+
+	// ------------------- End point not found 404-------------------
+	@ExceptionHandler(NoHandlerFoundException.class)
+	public ResponseEntity<CustomErrorResponse> handleNoHandlerFound(Exception ex, HttpServletRequest request) {
+		log.warn("Endpoint not found: ", ex);
+		CustomErrorResponse error = new CustomErrorResponse(HttpStatus.NOT_FOUND.value(),
+				HttpStatus.NOT_FOUND.getReasonPhrase(), "Endpoint not found", request.getRequestURI(),
+				java.time.OffsetDateTime.now().toString());
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+	}
+
+	// ------------------- Method Not Allowed 405-------------------
+	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+	public ResponseEntity<CustomErrorResponse> handleMethodNotSupported(Exception ex, HttpServletRequest request) {
+		log.warn("Method Not Allowed: ", ex);
+		CustomErrorResponse error = new CustomErrorResponse(HttpStatus.METHOD_NOT_ALLOWED.value(),
+				HttpStatus.METHOD_NOT_ALLOWED.getReasonPhrase(), "Method Not Allowed", request.getRequestURI(),
+				java.time.OffsetDateTime.now().toString());
+
+		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(error);
 	}
 
 	// ------------------- Validation Exception -------------------
