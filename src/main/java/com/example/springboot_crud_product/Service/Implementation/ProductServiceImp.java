@@ -6,6 +6,10 @@ import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
@@ -98,6 +102,42 @@ public class ProductServiceImp implements ProductService {
 		List<Product> products = repo.getProductsByMinPrice(price);
 
 		return products.stream().map(this::toDto).toList();
+	}
+
+	@Override
+	public List<ProductDTO> getProductByTitle(String name) {
+		List<Product> products = repo.getProductByTitle(name);
+		return products.stream().map(this::toDto).toList();
+	}
+
+	@Override
+	public List<ProductDTO> getProductByTitle2(String name) {
+		List<Product> products = repo.getProductByTitle2(name);
+		return products.stream().map(this::toDto).toList();
+	}
+
+	@Override
+	public Page<ProductDTO> findByNameContaining(String keyword, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("price").descending());
+		Page<Product> products = repo.findByNameContainingIgnoreCase(keyword, pageable);
+		return products.map(this::toDto);
+	}
+
+	@Override
+	public Page<ProductDTO> findByPriceBetween(Double priceFrom, Double priceTo, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size, Sort.by("price").ascending());
+		Page<Product> products = repo.findByPriceBetween(priceFrom, priceTo, pageable);
+		return products.map(this::toDto);
+	}
+
+	@Override
+	public ProductDTO findTopByOrderByPriceDesc() {
+		return toDto(repo.findTopByOrderByPriceDesc());
+	}
+
+	@Override
+	public List<Object[]> countProductByPrice() {
+		return repo.countProductByPrice();
 	}
 
 }
