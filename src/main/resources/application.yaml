@@ -15,3 +15,20 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+# --- Khai báo các thuộc tính JWT ---
+jwt:
+  # 1. Khóa bí mật (SECURITY BEST PRACTICE)
+  # Khóa này PHẢI dài và phức tạp (ví dụ: 32 ký tự ngẫu nhiên)
+  # Sử dụng một chuỗi BASE64 đã mã hóa có độ dài tối thiểu 256-bit (32 byte)
+  secret: YmFja2VuZHNwU1ByaW5nQnNhY0thR0Vuc3RhdGVtZW5zMjAyNEJhY2tnZW4=
+
+  # 2. Thời gian hết hạn của Access Token
+  access:
+    # 900000ms = 15 phút
+    expiration: 900000 
+    
+  # (Tùy chọn) 3. Thời gian hết hạn của Refresh Token
+  refresh:
+    # 7 ngày
+    expiration: 604800000
