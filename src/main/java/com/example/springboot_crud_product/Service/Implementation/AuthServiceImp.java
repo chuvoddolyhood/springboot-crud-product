@@ -22,16 +22,16 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class AuthServiceImp implements AuthService {
-	
+
 	@Autowired
 	UserRepository userRepo;
-	
+
 	@Autowired
 	PasswordEncoder encoder;
-	
+
 	@Autowired
 	JwtUtil jwtUtil;
-	
+
 	@Autowired
 	RefreshTokenRepository refreshTokenRepo;
 
@@ -39,51 +39,90 @@ public class AuthServiceImp implements AuthService {
 	@Override
 	@Transactional
 	public AuthResponse login(LoginRequest req) {
-		User user = userRepo.findByUsername(req.getUsername()).orElseThrow(()-> new RuntimeException("User not found"));
-		
-		if(!encoder.matches(req.getPassword(), user.getPassword())) {
+		User user = userRepo.findByUsername(req.getUsername())
+				.orElseThrow(() -> new RuntimeException("User not found"));
+
+		if (!encoder.matches(req.getPassword(), user.getPassword())) {
 			throw new RuntimeException("Invalid password");
 		}
-			
+
 		String accessToken = jwtUtil.generateToken(user);
 		String refreshToken = UUID.randomUUID().toString();
 		String deviceId = req.getDeviceId();
-		
-		//Delete old refreshToken which has userId and DeviceId
+
+		// Delete old refreshToken which has userId and DeviceId
 		refreshTokenRepo.deleteByUserIdAndDeviceId(user.getId(), deviceId);
-		
+
 		RefreshToken rt = new RefreshToken();
 		rt.setToken(refreshToken);
-        rt.setUser(user);
-        rt.setDeviceId(req.getDeviceId());
-        rt.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
-        rt.setRevoked(false);
-        
-        refreshTokenRepo.save(rt);
-        
-        return new AuthResponse(accessToken, refreshToken);
+		rt.setUser(user);
+		rt.setDeviceId(req.getDeviceId());
+		rt.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
+		rt.setRevoked(false);
+
+		refreshTokenRepo.save(rt);
+
+		return new AuthResponse(accessToken, refreshToken);
 
 	}
 
 	// REGISTER
 	@Override
 	public void register(RegisterRequest req, String role) {
-		
-		//Check username exists
+
+		// Check username exists
 		if (userRepo.existsByUsername(req.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
-				
-		//Create user and encode password
+			throw new RuntimeException("Username already exists");
+		}
+
+		// Create user and encode password
 		User user = new User();
 		user.setUsername(req.getUsername());
 		user.setPassword(encoder.encode(req.getPassword()));
 		user.setRole(role);
-		
-		//Save user
+
+		// Save user
 		userRepo.save(user);
 
 	}
-	
+
+//	// Refresh (ROTATION)
+//	@Override
+//	public AuthResponse refresh(RefreshTokenRequest req) {
+//
+//		RefreshToken oldToken = refreshTokenRepo.findByTokenAndDeviceId(req.getRefreshToken(), req.getDeviceId())
+//				.orElseThrow(() -> new RuntimeException("User not found"));
+//
+//		if (oldToken.isRevoked()) {
+//			refreshTokenRepo.revokeAllByUser(oldToken.getUser());
+//			throw new SecurityException("Token reuse detected");
+//		}
+//
+//		if (oldToken.getExpiryDate().isBefore(Instant.now())) {
+//			throw new RuntimeException("Refresh token expired");
+//		}
+//
+//		oldToken.setRevoked(true);
+//		refreshTokenRepo.save(oldToken);
+//
+//		RefreshToken newToken = new RefreshToken();
+//		newToken.setToken(UUID.randomUUID().toString());
+//		newToken.setUser(oldToken.getUser());
+//		newToken.setDeviceId(oldToken.getDeviceId());
+//		newToken.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
+//		newToken.setRevoked(false);
+//
+//		refreshTokenRepo.save(newToken);
+//
+//		String accessToken = jwtUtil.generateToken(oldToken.getUser());
+//
+//		return new AuthResponse(accessToken, newToken.getToken());
+//	}
+//
+//	@Override
+//	public void logout(User user, String deviceId) {
+//		refreshTokenRepo.deleteByUserIdAndDeviceId(user.getId(), deviceId);
+//
+//	}
 
 }
