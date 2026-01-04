@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002
+      author: nghia
+
+      preConditions:
+        onFail: MARK_RAN
+        not:
+          indexExists:
+            indexName: idx_products_liquibase_name
+            tableName: products
+
+      changes:
+        - createIndex:
+            tableName: products_liquibase
+            indexName: idx_products_liquibase_name
+            columns:
+              - column:
+                  name: name
